@@ -1,6 +1,8 @@
 # Job Tracker
 
-A full-stack web app for tracking job applications, built with Python and Flask.
+A full-stack web app for tracking job applications, built with Python and Flask. Deployed to production on Railway with PostgreSQL.
+
+🔗 **[Live Demo](https://web-production-ad913.up.railway.app)**
 
 ## Features
 
@@ -16,17 +18,18 @@ A full-stack web app for tracking job applications, built with Python and Flask.
 ## Tech Stack
 
 - Python 3 / Flask
-- SQLite via Flask-SQLAlchemy
+- PostgreSQL via Flask-SQLAlchemy (SQLite for local development)
 - Flask-Login for authentication
 - Werkzeug for password hashing
 - Bootstrap 5 for styling
+- Deployed on Railway with Gunicorn
 
-## Getting Started
+## Local Development
 
 ### 1. Install dependencies
 
 ```bash
-pip install flask flask-sqlalchemy flask-login werkzeug
+pip install flask flask-sqlalchemy flask-login werkzeug gunicorn
 ```
 
 ### 2. Run the app
@@ -45,13 +48,23 @@ http://127.0.0.1:5000
 
 Register an account and start tracking your applications.
 
+## Deployment
+
+The app is deployed on Railway. Environment variables required:
+
+| Variable | Description |
+|---|---|
+| `SECRET_KEY` | A long random string for session security |
+| `DATABASE_URL` | PostgreSQL connection string (set automatically by Railway) |
+
 ## Project Structure
 
 ```
 Job_Tracker/
 ├── app.py               # Flask app, routes, and database models
+├── Procfile             # Tells Railway how to start the app (gunicorn)
+├── requirements.txt     # Python dependencies
 ├── run.bat              # Windows double-click launcher
-├── jobs.db              # SQLite database (auto-created on first run)
 └── templates/
     ├── base.html        # Shared layout and navigation
     ├── login.html       # Login page
