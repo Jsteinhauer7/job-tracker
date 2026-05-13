@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="mb-0">My Applications</h2>
+    <div class="d-flex gap-2">
+        <a href="/export" class="btn btn-outline-secondary btn-sm">⬇ Export CSV</a>
+        <a href="/add" class="btn btn-primary btn-sm">+ Add Job</a>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-num">{{ counts['All'] }}</div>
+            <div class="stat-label">Total</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card applied">
+            <div class="stat-num">{{ counts['Applied'] }}</div>
+            <div class="stat-label">Applied</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card interview">
+            <div class="stat-num">{{ counts['Interview'] }}</div>
+            <div class="stat-label">Interview</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card offer">
+            <div class="stat-num">{{ counts['Offer'] }}</div>
+            <div class="stat-label">Offer</div>
+        </div>
+    </div>
+</div>
+
+<!-- Search + Sort + Filter -->
+<div class="d-flex gap-2 mb-3 flex-wrap align-items-center">
+    <input type="text" id="search" class="form-control" placeholder="Search company or role..." style="max-width:260px;">
+    <select id="sort-select" class="form-select" style="max-width:180px;">
+        <option value="date">Sort: Date Applied</option>
+        <option value="company">Sort: Company</option>
+        <option value="status">Sort: Status</option>
+    </select>
+    <div class="d-flex gap-2 flex-wrap">
+        {% for label, count in counts.items() %}
+            <a href="/?status={{ label }}"
+               class="btn btn-sm {{ 'btn-primary' if status_filter == label else 'btn-outline-secondary' }}">
+                {{ label }} <span class="badge bg-dark ms-1">{{ count }}</span>
+            </a>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Job Cards -->
+{% if jobs %}
+<div id="job-list">
+    {% for job in jobs %}
+    <div class="job-card"
+         data-company="{{ job.company|lower }}"
+         data-role="{{ job.role|lower }}"
+         data-status="{{ job.status }}"
+         data-date="{{ job.date_applied.isoformat() }}">
+        <div class="d-flex justify-content-between align-items-start">
+            <div>
+                <div class="job-company">{{ job.company }}</div>
+                <div class="job-role">{{ job.role }}</div>
+                <div class="job-date">Applied {{ job.date_applied.strftime('%b %d, %Y') }}</div>
+                {% if job.notes %}
+                <div class="job-notes">{{ job.notes }}</div>
+                {% endif %}
+            </div>
+            <div class="d-flex flex-column align-items-end gap-2">
+                <span class="status-badge status-{{ job.status|lower }}">{{ job.status }}</span>
+                <div class="d-flex gap-2">
+                    <a href="/edit/{{ job.id }}" class="btn btn-sm btn-outline-warning">Edit</a>
+                    <a href="/delete/{{ job.id }}" class="btn btn-sm btn-outline-danger"
+                       onclick="return confirm('Delete this job?')">Delete</a>
+                </div>
+                <form action="/status/{{ job.id }}" method="POST">
+                    <select name="status" class="form-select form-select-sm status-select" onchange="this.form.submit()">
+                        {% for s in ['Applied', 'Interview', 'Offer', 'Rejected'] %}
+                            <option value="{{ s }}" {{ 'selected' if job.status == s else '' }}>{{ s }}</option>
+                        {% endfor %}
+                    </select>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+<p id="no-results" class="text-center" style="display:none; opacity:0.5; margin-top:40px;">No matching jobs found.</p>
+{% else %}
+    <p class="text-center" style="opacity:0.5; margin-top:60px;">No applications yet — add one above!</p>
+{% endif %}
+
+<style>
+    .stat-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 14px;
+        padding: 20px;
+        text-align: center;
+    }
+    .stat-card.applied { border-color: rgba(99,102,241,0.4); }
+    .stat-card.interview { border-color: rgba(234,179,8,0.4); }
+    .stat-card.offer { border-color: rgba(34,197,94,0.4); }
+    .stat-num { font-size: 2rem; font-weight: 800; color: #fff; }
+    .stat-label { font-size: 0.8rem; opacity: 0.6; text-transform: uppercase; letter-spacing: 0.05em; }
+    .stat-card.applied .stat-num { color: #818cf8; }
+    .stat-card.interview .stat-num { color: #fbbf24; }
+    .stat-card.offer .stat-num { color: #4ade80; }
+
+    .job-card {
+        background: rgba(255,255,255,0.04);
+        border: 1px solid rgba(255,255,255,0.07);
+        border-radius: 14px;
+        padding: 20px 24px;
+        margin-bottom: 12px;
+        transition: border-color 0.2s;
+    }
+    .job-card:hover { border-color: rgba(99,102,241,0.4); }
+    .job-company { font-size: 1.1rem; font-weight: 700; color: #fff; }
+    .job-role { font-size: 0.95rem; color: #a0a0c0; margin-top: 2px; }
+    .job-date { font-size: 0.78rem; opacity: 0.45; margin-top: 6px; }
+    .job-notes { font-size: 0.82rem; color: #888; margin-top: 6px; font-style: italic; }
+
+    .status-badge {
+        font-size: 0.75rem; font-weight: 600; padding: 4px 12px;
+        border-radius: 20px; text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .status-applied { background: rgba(99,102,241,0.15); color: #818cf8; }
+    .status-interview { background: rgba(234,179,8,0.15); color: #fbbf24; }
+    .status-offer { background: rgba(34,197,94,0.15); color: #4ade80; }
+    .status-rejected { background: rgba(239,68,68,0.15); color: #f87171; }
+
+    .status-select { background: #1e1e2e; color: #f0f0f0; border-color: rgba(255,255,255,0.15); font-size: 0.8rem; }
+</style>
+
+<script>
+    const search = document.getElementById('search');
+    const sortSelect = document.getElementById('sort-select');
+    const jobList = document.getElementById('job-list');
+    const noResults = document.getElementById('no-results');
+
+    function filterAndSort() {
+        if (!jobList) return;
+        const query = search ? search.value.toLowerCase() : '';
+        const sortBy = sortSelect ? sortSelect.value : 'date';
+        const cards = [...jobList.querySelectorAll('.job-card')];
+
+        cards.forEach(card => {
+            const match = card.dataset.company.includes(query) || card.dataset.role.includes(query);
+            card.style.display = match ? '' : 'none';
+        });
+
+        const visible = cards.filter(c => c.style.display !== 'none');
+        noResults.style.display = visible.length === 0 ? '' : 'none';
+
+        visible.sort((a, b) => {
+            if (sortBy === 'company') return a.dataset.company.localeCompare(b.dataset.company);
+            if (sortBy === 'status') return a.dataset.status.localeCompare(b.dataset.status);
+            return b.dataset.date.localeCompare(a.dataset.date);
+        }).forEach(card => jobList.appendChild(card));
+    }
+
+    if (search) search.addEventListener('input', filterAndSort);
+    if (sortSelect) sortSelect.addEventListener('change', filterAndSort);
+</script>
+{% endblock %}

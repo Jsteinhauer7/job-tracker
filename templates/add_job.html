@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card p-4 shadow">
+            <h3 class="mb-4">{{ 'Edit Job' if job else 'Add Job' }}</h3>
+            <form method="POST">
+                <div class="mb-3">
+                    <label class="form-label">Company</label>
+                    <input type="text" name="company" class="form-control"
+                           value="{{ job.company if job else '' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Role</label>
+                    <input type="text" name="role" class="form-control"
+                           value="{{ job.role if job else '' }}" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Status</label>
+                    <select name="status" class="form-select">
+                        {% for s in ['Applied', 'Interview', 'Offer', 'Rejected'] %}
+                            <option value="{{ s }}" {{ 'selected' if job and job.status == s else '' }}>
+                                {{ s }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date Applied</label>
+                    <input type="date" name="date_applied" class="form-control"
+                           value="{{ job.date_applied.isoformat() if job else '' }}">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Notes</label>
+                    <textarea name="notes" class="form-control" rows="3">{{ job.notes if job else '' }}</textarea>
+                </div>
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        {{ 'Save Changes' if job else 'Add Job' }}
+                    </button>
+                    <a href="/" class="btn btn-outline-secondary">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
